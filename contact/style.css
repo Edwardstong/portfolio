@@ -41,10 +41,14 @@ input,
 textarea,
 button {
   font: inherit;
-  grid-column: 1 / -1;
 }
 
 form {
   display: grid;
   grid-template-columns: auto 1fr;
 }
+
+button {
+  grid-column: 1 / -1; /* span from first to last column */
+}
+

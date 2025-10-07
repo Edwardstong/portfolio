@@ -37,24 +37,23 @@ body {
     padding: 1rem;
 }
 
-label,
-input,
-textarea,
-button {
-  display: block;
+form {
+  display: grid;
+  grid-template-columns: auto 1fr; /* left: content width, right: fills */
+  gap: 0.5rem 1rem;                /* row gap, column gap */
 }
 
-input,
-textarea,
-select {
-  font: inherit;
+label {
+  justify-self: end;               /* push labels to the right edge */
+  align-self: center;              /* vertically center vs inputs */
 }
 
-button {
+input, textarea, select {
+  font: inherit;                   /* keep typography consistent */
   width: 100%;
   box-sizing: border-box;
 }
 
-label {
-  margin-block: 0.5rem;
+button {
+  grid-column: 1 / -1;             /* make the button span both columns */
 }

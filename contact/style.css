@@ -37,23 +37,24 @@ body {
     padding: 1rem;
 }
 
+input,
+textarea,
+button {
+  font: inherit;
+}
+
 form {
   display: grid;
-  grid-template-columns: auto 1fr; /* left: content width, right: fills */
-  gap: 0.5rem 1rem;                /* row gap, column gap */
+  grid-template-columns: auto 1fr;
+  gap: 1em;
 }
 
 label {
-  justify-self: end;               /* push labels to the right edge */
-  align-self: center;              /* vertically center vs inputs */
-}
-
-input, textarea, select {
-  font: inherit;                   /* keep typography consistent */
-  width: 100%;
-  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
 }
 
 button {
-  grid-column: 1 / -1;             /* make the button span both columns */
+  grid-column: 1 / -1;
 }

@@ -1,3 +1,8 @@
+:root {
+  --color-accent: oklch(65% 50% 0);
+}
+html { accent-color: var(--color-accent); }
+
 nav a {
   flex: 1;
   text-decoration: none;
@@ -14,8 +19,15 @@ nav {
 
 nav a.current {
   border-bottom: 0.4em solid oklch(80% 3% 200);
-  padding-bottom: 0.1em;
+  padding-bottom: 0.1em;           /* 0.5em - 0.4em */
 }
+
+nav a:hover,
+nav a:focus-visible {
+  border-bottom: 0.4em solid var(--color-accent);
+  padding-bottom: 0.1em;           /* same compensation as current */
+}
+
 
 body {
     font: 100% / 1.5 system-ui;

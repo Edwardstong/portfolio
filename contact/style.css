@@ -42,6 +42,7 @@ textarea,
 button {
   font: inherit;
 }
+
 form {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -52,6 +53,12 @@ form > label {
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
+}
+
+form > label > :is(input, textarea, select) {
+  grid-column: 2;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 form > button {

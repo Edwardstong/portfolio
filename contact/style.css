@@ -49,6 +49,12 @@ form {
   gap: 1em;
 }
 
-form > label { display: contents; }
+form > label {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
 
-form > button { grid-column: 1 / -1; }
+form > button {
+  grid-column: 1 / -1;
+}

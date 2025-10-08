@@ -37,3 +37,50 @@ body {
     margin-inline: auto;
     padding: 1rem;
 }
+
+/* === CV page additions (append below your current CSS) === */
+
+/* Headings & hierarchy */
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 .25rem;
+  text-wrap: balance;
+}
+
+h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  text-wrap: balance;
+  margin: 1rem 0 .5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  border-top: 2px solid oklch(80% 3% 200);
+  padding-top: .5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-top: .5rem;
+}
+
+header { margin-bottom: .75rem; }
+header p { margin: .25rem 0 0; opacity: .85; }
+
+main { display: grid; gap: 1rem; }
+
+section {
+  padding-bottom: .75rem;
+  border-bottom: 1px dashed oklch(80% 3% 200);
+}
+
+article { margin: .5rem 0 1rem; }
+
+ul { margin: .25rem 0 .5rem; padding-left: 1.1rem; }
+li { margin: .2rem 0; }
+
+time { font-variant-numeric: tabular-nums; opacity: .9; }
+
+a { text-underline-offset: .14em; }
+a:hover, a:focus-visible { text-decoration-thickness: .14em; }

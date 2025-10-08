@@ -48,7 +48,6 @@ form {
   grid-template-columns: auto 1fr;
 }
 
-button {
-  grid-column: 1 / -1; /* span from first to last column */
-}
+form > label { display: contents; }
 
+form > button { grid-column: 1 / -1; }

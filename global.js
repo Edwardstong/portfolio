@@ -69,6 +69,13 @@ document.body.insertAdjacentHTML(
   `
 );
 
+const select = document.querySelector('.color-scheme select');
+
+select?.addEventListener('input', (event) => {
+  console.log('color scheme changed to', event.target.value);
+  document.documentElement.style.setProperty('color-scheme', event.target.value);
+});
+
 // Step 5 — mailto with proper percent-encoding
 const form = document.querySelector('form');
 

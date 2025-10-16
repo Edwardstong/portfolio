@@ -55,3 +55,23 @@ for (let p of pages) {
   }
 }
 
+// Step 5 — mailto with proper percent-encoding
+const form = document.querySelector('form');
+
+form?.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  const data = new FormData(form);
+  const pairs = [];
+  for (let [name, value] of data) {
+    pairs.push(`${name}=${encodeURIComponent(value)}`);
+  }
+
+  const action = form.getAttribute('action') || '';
+  const sep = action.includes('?') ? '&' : '?';
+  const url = `${action}${pairs.length ? sep + pairs.join('&') : ''}`;
+
+  location.href = url;
+});
+
+

@@ -8,7 +8,7 @@ renderProjects(latestProjects, projectsContainer, 'h2');
 
 const githubData = await fetchGitHubData('Edwardstong'); // your username
 const profileStats = document.querySelector('#profile-stats');
-if (profileStats && githubData) {
+if (profileStats) {
   profileStats.innerHTML = `
     <h2>GitHub Profile</h2>
     <dl>

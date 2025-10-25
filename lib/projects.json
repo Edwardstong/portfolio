@@ -1,8 +1,8 @@
 [
     {
-        "title": "Lorem ipsum dolor sit!!!!",
+        "title": "Grocery Energy Data Visualization",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
-        "description": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Dolorum quae deleniti quam excepturi, hic vel consequuntur iure harum commodi, recusandae deserunt, minus eum. Quia, iste atque labore repudiandae nihil commodi."
+        "description": "Visulized the price per calorie for each food processing degree in three different crocery stores: Walmart, Target, WholeFoods"
     },
     {
         "title": "Pariatur eum quis dignissimos!",

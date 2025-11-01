@@ -115,22 +115,36 @@ export async function fetchJSON(url) {
 
 export function renderProjects(projects, containerElement, headingLevel = 'h2') {
   if (!(containerElement instanceof Element)) return;
+
   const valid = new Set(['h1','h2','h3','h4','h5','h6']);
   if (!valid.has(headingLevel)) headingLevel = 'h2';
   if (!Array.isArray(projects)) projects = projects ? [projects] : [];
+
   containerElement.innerHTML = '';
+
   for (const p of projects) {
     const article = document.createElement('article');
+
     const h = document.createElement(headingLevel);
     h.textContent = p?.title ?? 'Untitled Project';
+
     const img = document.createElement('img');
-    if (p?.image) { img.src = p.image; img.alt = p?.title || ''; } else { img.style.display = 'none'; }
+    if (p?.image) { img.src = p.image; img.alt = p?.title || ''; }
+    else { img.style.display = 'none'; }
+
     const desc = document.createElement('p');
     desc.textContent = p?.description ?? '';
-    article.append(h, img, desc);
+
+    // 👉 NEW: show year
+    const yearEl = document.createElement('small');
+    yearEl.className = 'project-year';
+    yearEl.textContent = p?.year ? `c. ${p.year}` : '';
+
+    article.append(h, img, desc, yearEl);
     containerElement.appendChild(article);
   }
 }
+
 
 export async function fetchGitHubData(username) {
   return fetchJSON(`https://api.github.com/users/${encodeURIComponent(username)}`);

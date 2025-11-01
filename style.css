@@ -52,3 +52,10 @@ label.color-scheme {
 label.color-scheme select {
   font-family: inherit;
 }
+
+.project-year {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+  font-variant-numeric: oldstyle-nums; /* <- this */
+}

@@ -57,30 +57,11 @@ g.selectAll('path')
     d3.select(this).attr('opacity', 1);
   });
 
-// legend
-const legend = svg.append('g')
-  .attr('transform', 'translate(60, -40)');
+const legend = d3.select('.legend');
 
-const row = legend.selectAll('g')
-  .data(byYear)
-  .join('g')
-  .attr('transform', (_, i) => `translate(0, ${i * 14})`);
-
-row.append('rect')
-  .attr('width', 10)
-  .attr('height', 10)
-  .attr('fill', d => color(d.key));
-
-row.append('text')
-  .attr('x', 14)
-  .attr('y', 9)
-  .attr('font-size', 11)
-  .text(d => `${d.key}: ${d.value}`);
-
-// Legend (required)
-d3.select('.legend')
-  .selectAll('li')
-  .data(byYear)
-  .join('li')
-  .attr('style', d => `--c:${color(d.key)}`)
-  .html(d => `<span class="swatch"></span>${d.key} (${d.value})`);
+byYear.forEach(d => {
+  legend
+    .append('li')
+    .attr('style', `--color:${color(d.key)}`)
+    .html(`<span class="swatch"></span> ${d.key} <em>(${d.value})</em>`);
+});

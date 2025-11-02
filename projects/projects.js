@@ -67,4 +67,5 @@ byYear.forEach(d => {
     .html(`<span class="swatch"></span> ${d.key} <em>(${d.value})</em>`);
 });
 
+const data = byYear.map(d => ({ label: d.key, value: d.value }));
 

@@ -127,104 +127,115 @@
 //   // Step 4.4: re-render pie chart + legend for filtered subset
 //   renderPieChart(filteredProjects);
 // });
-
 import { fetchJSON, renderProjects } from '../global.js';
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7/+esm';
 
 const projects = await fetchJSON('../lib/projects.json');
 
+// Title & initial cards (unchanged)
 const title = document.querySelector('.projects-title');
 if (title) title.textContent = `Projects (${Array.isArray(projects) ? projects.length : 0})`;
 
 const projectsContainer = document.querySelector('.projects');
 renderProjects(projects, projectsContainer, 'h2');
 
-// ---------- Step 3 data ----------
-const rolledData = d3.rollups(
-  projects,
-  v => v.length,
-  d => String(d.year ?? 'Unknown')
-);
+// ---------- D3 roots & helpers ----------
+const svgRoot    = d3.select('#projects-pie-plot');
+const legendRoot = d3.select('.legend');
+const radius     = 50;
 
-const data = rolledData
-  .sort((a, b) => d3.ascending(a[0], b[0]))
-  .map(([year, count]) => ({ label: year, value: count }));
+const pie  = d3.pie().sort(null).value(d => d.value);
+const arc  = d3.arc().innerRadius(0).outerRadius(radius);
 
-// ---------- draw pie once ----------
-const svg = d3.select('#projects-pie-plot');
-const radius = 50;
-
-const color = d3.scaleOrdinal()
-  .domain(data.map(d => d.label))
-  .range(d3.schemeTableau10);
-
-const pie = d3.pie().sort(null).value(d => d.value);
-const arc = d3.arc().innerRadius(0).outerRadius(radius);
-
-const g = svg.append('g').attr('transform', 'translate(0,0)');
-
-const paths = g.selectAll('path')
-  .data(pie(data))
-  .join('path')
-  .attr('d', arc)
-  .attr('fill', d => color(d.data.label))
-  .attr('stroke', 'white')
-  .attr('stroke-width', 1)
-  .on('mouseenter', function(){ d3.select(this).attr('opacity', 0.8); })
-  .on('mouseleave', function(){ d3.select(this).attr('opacity', 1); })
-  .style('cursor', 'pointer');
-
-const legend = d3.select('.legend');
-const legendItems = legend.selectAll('li')
-  .data(data)
-  .join('li')
-  .attr('class', 'legend-item')
-  .attr('style', d => `--color:${color(d.label)}`)
-  .html(d => `<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`)
-  .style('cursor', 'pointer');
-
-// ---------- Step 5.2/5.3 selection + filtering ----------
-let selectedIndex = -1;  // -1 means nothing selected
-
-function updateSelection(idx) {
-  // toggle if same slice clicked
-  selectedIndex = (selectedIndex === idx ? -1 : idx);
-
-  // update classes (for CSS highlight/dimming)
-  paths.classed('selected', (_, i) => i === selectedIndex);
-  legendItems.classed('selected', (_, i) => i === selectedIndex);
-
-  // filter projects list by year (or show all if deselected)
-  if (selectedIndex === -1) {
-    renderProjects(projects, projectsContainer, 'h2');
-  } else {
-    const year = data[selectedIndex].label;
-    const filtered = projects.filter(p => String(p.year ?? 'Unknown') === year);
-    renderProjects(filtered, projectsContainer, 'h2');
-  }
+// group-by-year -> [{label:'2024', value:3}, ...] sorted by label
+function byYearData(arr) {
+  return Array.from(
+    d3.rollups(arr, v => v.length, d => String(d.year ?? 'Unknown')),
+    ([label, value]) => ({ label, value })
+  ).sort((a, b) => d3.ascending(a.label, b.label));
 }
 
-// click handlers (no re-draw of the pie)
-paths.on('click', function () {
-  const i = paths.nodes().indexOf(this);
-  updateSelection(i);
-});
+// ---------- State ----------
+let query = '';
+let selectedYear = null; // null means “no selection”
 
-legendItems.on('click', function () {
-  const i = legendItems.nodes().indexOf(this);
-  updateSelection(i);
-});
+// ---------- Rendering ----------
+function renderPieChart(baseArr) {
+  const data = byYearData(baseArr);
 
-// ---------- Step 4 search (unchanged; not combined with click) ----------
-let query = "";
-const searchInput = document.querySelector(".searchBar");
-searchInput?.addEventListener("input", (event) => {
-  query = event.target.value.toLowerCase();
-  const filteredProjects = projects.filter(project =>
-    Object.values(project).join(" ").toLowerCase().includes(query)
+  // clear previous chart & legend
+  svgRoot.selectAll('*').remove();
+  legendRoot.selectAll('*').remove();
+
+  // color scale
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.label))
+    .range(d3.schemeTableau10);
+
+  // draw slices
+  const g = svgRoot.append('g').attr('transform', 'translate(0,0)');
+
+  const slices = g.selectAll('path')
+    .data(pie(data))
+    .join('path')
+    .attr('d', arc)
+    .attr('fill', d => color(d.data.label))
+    .attr('stroke', 'white')
+    .attr('stroke-width', 1)
+    .attr('class', d => (d.data.label === selectedYear ? 'selected' : null))
+    .style('cursor', 'pointer');
+
+  // slice click -> toggle selection then re-render everything
+  slices.on('click', (event, d) => {
+    const y = d.data.label;
+    selectedYear = (selectedYear === y ? null : y);
+    applyFiltersAndRender(); // keeps pie reactive + filters cards
+  });
+
+  // legend (grid of <li>)
+  const items = legendRoot.selectAll('li')
+    .data(data)
+    .join('li')
+    .attr('class', d => `legend-item${d.label === selectedYear ? ' selected' : ''}`)
+    .attr('style', d => `--color:${color(d.label)}`)
+    .html(d => `<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`)
+    .style('cursor', 'pointer');
+
+  items.on('click', (_, d) => {
+    const y = d.label;
+    selectedYear = (selectedYear === y ? null : y);
+    applyFiltersAndRender();
+  });
+}
+
+// single source of truth for rendering both cards and pie
+function applyFiltersAndRender() {
+  // 1) filter by search
+  const searchFiltered = projects.filter(p =>
+    Object.values(p).join(' ').toLowerCase().includes(query)
   );
-  renderProjects(filteredProjects, projectsContainer, "h2");
+
+  // ensure selection is valid under current search; else drop it
+  const presentYears = new Set(searchFiltered.map(p => String(p.year ?? 'Unknown')));
+  if (selectedYear && !presentYears.has(selectedYear)) selectedYear = null;
+
+  // 2) render pie from the search-filtered set (reactive pie)
+  renderPieChart(searchFiltered);
+
+  // 3) render cards from search × selectedYear
+  const final = selectedYear
+    ? searchFiltered.filter(p => String(p.year ?? 'Unknown') === selectedYear)
+    : searchFiltered;
+
+  renderProjects(final, projectsContainer, 'h2');
+}
+
+// ---------- Wire up search (Step 4) ----------
+const searchInput = document.querySelector('.searchBar');
+searchInput?.addEventListener('input', (event) => {
+  query = (event.target.value || '').toLowerCase();
+  applyFiltersAndRender();
 });
 
-
-
+// Initial paint
+applyFiltersAndRender();

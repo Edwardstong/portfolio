@@ -129,4 +129,6 @@ legend.selectAll('li')
   .attr('style', d => `--color:${color(d.label)}`)
   .html(d => `<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`);
 
+console.log('[rollups]', rolledData); // For step 3 check
+console.log('[data]', data);          // For step 3 check
 

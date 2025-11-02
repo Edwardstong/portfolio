@@ -52,94 +52,74 @@ label.color-scheme select {
   font-family: inherit;
 }
 
-
-.projects {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
-}
-
+/* Projects grid */
 .projects {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
   gap: 1em;
   grid-auto-rows: 1fr;
 }
-
 .projects > article {
   display: grid;
   grid-template-rows: subgrid;
   grid-row: span 3;
 }
+.projects h2 { margin: 0; }
 
-.projects h2 {
-  margin: 0;
-}
+/* Headings */
+h1 { font-size: 400%; }
+h1, h2, h3, h4, h5, h6 { line-height: 1.1; text-wrap: balance; }
 
-h1 {
-  font-size: 400%;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  line-height: 1.1;
-  text-wrap: balance;
-}
-
+/* Pie SVG sizing */
 #projects-pie-plot {
   max-width: 20em;
   margin-block: 2em;
   overflow: visible;
 }
 
-.legend { list-style: none; margin: 0.5rem 0; padding: 0; }
-.legend li { display: flex; align-items: center; gap: 0.5rem; }
-.legend .swatch { width: 0.8rem; height: 0.8rem; background: var(--c); }
-
-/* Legend container as a responsive grid */
+/* Legend container (grid) */
 .legend {
   list-style: none;
   margin: 0.75rem 0;
   padding: 0.75rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9em, 1fr)); /* per lab */
-  gap: 0.75rem 1rem;   /* row gap / column gap */
-  border: 1px solid #e5e5e5;       /* optional but matches write-up */
-  border-radius: 8px;               /* optional */
+  grid-template-columns: repeat(auto-fill, minmax(9em, 1fr));
+  gap: 0.75rem 1rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
 }
 
-/* Each legend item: align swatch + text */
+/* Legend item row */
 .legend-item {
-  display: flex;               /* per lab tip */
-  align-items: center;         /* centers the swatch with text */
-  gap: 0.5rem;                 /* item gap should be < .legend gap */
-  min-width: 8em;              /* reasonable width so grid can wrap */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;            /* keep smaller than .legend gap */
+  min-width: 8em;
 }
 
-/* Swatch appearance */
+/* Swatch (driven by --color set in JS) */
 .legend .swatch {
-  display: inline-block;       /* needed for width/height to apply */
+  display: inline-block;
   width: 0.9rem;
-  aspect-ratio: 1 / 1;         /* square */
+  aspect-ratio: 1 / 1;
   background: var(--color);
-  border-radius: 3px;          /* 50% for a circle if you prefer */
+  border-radius: 3px;     /* use 50% if you want circles */
 }
 
-/* Step 2.3: layout pie + legend side-by-side */
+/* Layout pie + legend side-by-side */
 .container {
   display: flex;
-  align-items: flex-start;   /* top-align */
-  gap: 1rem;                 /* space between pie and legend */
+  align-items: flex-start;
+  gap: 1rem;
 }
+.container .legend { flex: 1; }
 
-/* let the legend use the remaining width */
-.container .legend {
-  flex: 1;
-}
-
+/* Search bar */
 .searchBar {
   display: block;
   width: 100%;
   max-width: 20em;
-  margin: 0 auto 1rem auto; /* centers it like the screenshot */
+  margin: 0 auto 1rem auto;
   padding: 0.4em 0.6em;
   border: 1px solid #ccc;
   border-radius: 0.4em;
@@ -147,28 +127,17 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
-/* Step 5.1 — Highlight hovered wedge */
-svg:has(path:hover) path {
-  opacity: 0.5;
-}
+/* --- Step 5.1: Hover highlight (fade others) --- */
+svg:has(path:hover) path { opacity: 0.5; }
+path:hover { opacity: 1; }
+path { transition: opacity 300ms; }
 
-path:hover {
-  opacity: 1;
-}
+/* --- Step 5.2–5.3: Selection styling --- */
+/* When a slice is selected, dim all non-selected slices */
+svg:has(path.selected) path:not(.selected) { opacity: 0.35; }
 
-path {
-  transition: opacity 300ms;
-}
+/* Selected wedge uses the lab’s highlight color */
+path.selected { fill: oklch(66% 0.45 0) !important; }
 
-/* dim non-selected wedges when something is selected */
-svg:has(path.selected) path:not(.selected) { opacity: .35; }
-
-/* selected wedge and its legend chip use the highlight color */
-path.selected { fill: oklch(66% 0.45 0) !important; }    /* reddish highlight */
+/* Selected legend item swatch uses the same highlight color */
 .legend li.selected { --color: oklch(66% 0.45 0) !important; }
-
-
-
-
-
-

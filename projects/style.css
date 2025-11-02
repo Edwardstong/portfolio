@@ -160,33 +160,14 @@ path {
   transition: opacity 300ms;
 }
 
-/* --- keep your hover from 5.1 --- */
-svg:has(path:hover) path { opacity: 0.5; }
-path:hover { opacity: 1; }
-path { transition: opacity 300ms; }
+/* dim non-selected wedges when something is selected */
+svg:has(path.selected) path:not(.selected) { opacity: .35; }
 
-/* --- 5.2 selection styling per write-up --- */
-/* Use the write-up’s color: oklch(60% 45% 0)  -> proper CSS syntax is 0.45 for chroma */
-path.selected {
-  --selected-color: oklch(60% 0.45 0);
-  fill: var(--selected-color) !important; /* only the clicked slice recolors */
-}
+/* selected wedge and its legend chip use the highlight color */
+path.selected { fill: oklch(66% 0.45 0) !important; }    /* reddish highlight */
+.legend li.selected { --color: oklch(66% 0.45 0) !important; }
 
-/* When a slice is selected, dim all *other* slices */
-svg:has(path.selected) path:not(.selected) {
-  opacity: 0.35;
-}
 
-/* Legend selection + dimming to match */
-.legend-item.selected {
-  --selected-color: oklch(60% 0.45 0);
-  outline: 2px solid var(--selected-color);
-  outline-offset: 2px;
-  font-weight: 600;
-}
-.legend:has(.selected) .legend-item:not(.selected) {
-  opacity: 0.6;
-}
 
 
 

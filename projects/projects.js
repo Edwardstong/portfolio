@@ -131,7 +131,6 @@
 import { fetchJSON, renderProjects } from '../global.js';
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7/+esm';
 
-// Load data + title
 const projects = await fetchJSON('../lib/projects.json');
 
 const title = document.querySelector('.projects-title');
@@ -140,109 +139,92 @@ if (title) title.textContent = `Projects (${Array.isArray(projects) ? projects.l
 const projectsContainer = document.querySelector('.projects');
 renderProjects(projects, projectsContainer, 'h2');
 
-// ---------- helpers ----------
-function groupByYear(arr) {
-  const rolled = d3.rollups(arr, v => v.length, d => String(d.year ?? 'Unknown'));
-  return rolled
-    .sort((a, b) => d3.ascending(a[0], b[0]))
-    .map(([label, value]) => ({ label, value }));
+// ---------- Step 3 data ----------
+const rolledData = d3.rollups(
+  projects,
+  v => v.length,
+  d => String(d.year ?? 'Unknown')
+);
+
+const data = rolledData
+  .sort((a, b) => d3.ascending(a[0], b[0]))
+  .map(([year, count]) => ({ label: year, value: count }));
+
+// ---------- draw pie once ----------
+const svg = d3.select('#projects-pie-plot');
+const radius = 50;
+
+const color = d3.scaleOrdinal()
+  .domain(data.map(d => d.label))
+  .range(d3.schemeTableau10);
+
+const pie = d3.pie().sort(null).value(d => d.value);
+const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+const g = svg.append('g').attr('transform', 'translate(0,0)');
+
+const paths = g.selectAll('path')
+  .data(pie(data))
+  .join('path')
+  .attr('d', arc)
+  .attr('fill', d => color(d.data.label))
+  .attr('stroke', 'white')
+  .attr('stroke-width', 1)
+  .on('mouseenter', function(){ d3.select(this).attr('opacity', 0.8); })
+  .on('mouseleave', function(){ d3.select(this).attr('opacity', 1); })
+  .style('cursor', 'pointer');
+
+const legend = d3.select('.legend');
+const legendItems = legend.selectAll('li')
+  .data(data)
+  .join('li')
+  .attr('class', 'legend-item')
+  .attr('style', d => `--color:${color(d.label)}`)
+  .html(d => `<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`)
+  .style('cursor', 'pointer');
+
+// ---------- Step 5.2/5.3 selection + filtering ----------
+let selectedIndex = -1;  // -1 means nothing selected
+
+function updateSelection(idx) {
+  // toggle if same slice clicked
+  selectedIndex = (selectedIndex === idx ? -1 : idx);
+
+  // update classes (for CSS highlight/dimming)
+  paths.classed('selected', (_, i) => i === selectedIndex);
+  legendItems.classed('selected', (_, i) => i === selectedIndex);
+
+  // filter projects list by year (or show all if deselected)
+  if (selectedIndex === -1) {
+    renderProjects(projects, projectsContainer, 'h2');
+  } else {
+    const year = data[selectedIndex].label;
+    const filtered = projects.filter(p => String(p.year ?? 'Unknown') === year);
+    renderProjects(filtered, projectsContainer, 'h2');
+  }
 }
 
-const svg        = d3.select('#projects-pie-plot');
-const legendRoot = d3.select('.legend');
-const radius     = 50;
-
-let query = '';
-let selectedYear = null; // null = no filter by year
-
-// ---------- render pie + legend ----------
-function renderPieChart(sourceProjects) {
-  const data  = groupByYear(sourceProjects);
-  const color = d3.scaleOrdinal().domain(data.map(d => d.label)).range(d3.schemeTableau10);
-  const pie   = d3.pie().sort(null).value(d => d.value);
-  const arc   = d3.arc().innerRadius(0).outerRadius(radius);
-
-  // reset
-  svg.selectAll('*').remove();
-  legendRoot.selectAll('*').remove();
-
-  // slices
-  const g = svg.append('g').attr('transform', 'translate(0,0)');
-  const paths = g.selectAll('path')
-    .data(pie(data))
-    .join('path')
-    .attr('d', arc)
-    .attr('fill', d => color(d.data.label))
-    .attr('stroke', 'white')
-    .attr('stroke-width', 1)
-    .style('transition', 'opacity 300ms')
-    .on('mouseenter', function(){ d3.select(this).attr('opacity', 0.8); })
-    .on('mouseleave', function(){ d3.select(this).attr('opacity', 1); })
-    .style('cursor', 'pointer')
-    .on('click', (_, d) => {
-      // toggle selection by year label
-      const year = d.data.label;
-      selectedYear = (selectedYear === year) ? null : year;
-      applyFilters();        // <<< combine with search filter
-    });
-
-  // legend
-  const items = legendRoot.selectAll('li')
-    .data(data)
-    .join('li')
-    .attr('class', 'legend-item')
-    .attr('style', d => `--color:${color(d.label)}`)
-    .html(d => `<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`)
-    .style('cursor', 'pointer')
-    .on('click', (_, d) => {
-      selectedYear = (selectedYear === d.label) ? null : d.label;
-      applyFilters();
-    });
-
-  // reflect current selection visually
-  applySelectionStyles(paths, items);
-}
-
-function applySelectionStyles(paths, items) {
-  // clear previous
-  paths.attr('class', null);
-  items.attr('class', 'legend-item');
-
-  if (!selectedYear) return;
-
-  // add .selected to the matching slice + legend item
-  paths.each(function(d){
-    if (d.data.label === selectedYear) d3.select(this).attr('class', 'selected');
-  });
-  items.each(function(d){
-    if (d.label === selectedYear) d3.select(this).attr('class', 'legend-item selected');
-  });
-}
-
-// ---------- search ----------
-const searchInput = document.querySelector('.searchBar');
-searchInput?.addEventListener('input', (e) => {
-  query = e.target.value.toLowerCase();
-  applyFilters();
+// click handlers (no re-draw of the pie)
+paths.on('click', function () {
+  const i = paths.nodes().indexOf(this);
+  updateSelection(i);
 });
 
-// ---------- unified filter (search ∩ selectedYear) ----------
-function applyFilters() {
-  // search across all fields
-  let visible = projects.filter(p =>
-    Object.values(p).join(' ').toLowerCase().includes(query)
+legendItems.on('click', function () {
+  const i = legendItems.nodes().indexOf(this);
+  updateSelection(i);
+});
+
+// ---------- Step 4 search (unchanged; not combined with click) ----------
+let query = "";
+const searchInput = document.querySelector(".searchBar");
+searchInput?.addEventListener("input", (event) => {
+  query = event.target.value.toLowerCase();
+  const filteredProjects = projects.filter(project =>
+    Object.values(project).join(" ").toLowerCase().includes(query)
   );
+  renderProjects(filteredProjects, projectsContainer, "h2");
+});
 
-  // AND year filter if set
-  if (selectedYear) {
-    visible = visible.filter(p => String(p.year ?? 'Unknown') === selectedYear);
-  }
-
-  renderProjects(visible, projectsContainer, 'h2');
-  renderPieChart(visible); // redraw pie/legend from the visible subset
-}
-
-// initial draw
-renderPieChart(projects);
 
 

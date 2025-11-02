@@ -160,13 +160,19 @@ path {
   transition: opacity 300ms;
 }
 
-/* Step 5.2 — Highlighting selected wedge & legend */
-.selected {
-  --color: oklch(65% 0.45 90) !important; /* pick any contrasting color */
+/* highlight only the selected slice (keep original color, just brighten/outline) */
+path.selected {
+  filter: brightness(1.25);
+  stroke: currentColor;
+  stroke-width: 1.5;
 }
 
-svg:has(path.selected) path {
-  fill: var(--color);
+/* highlight the matching legend item */
+.legend-item.selected {
+  outline: 2px solid var(--color);
+  outline-offset: 2px;
+  font-weight: 600;
 }
+
 
 

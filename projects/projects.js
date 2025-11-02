@@ -132,3 +132,20 @@ legend.selectAll('li')
 console.log('[rollups]', rolledData); // For step 3 check
 console.log('[data]', data);          // For step 3 check
 
+//Step 4
+let query = "";
+const searchInput = document.querySelector(".searchBar");
+
+searchInput?.addEventListener("input", (event) => {
+  // update the query value
+  query = event.target.value.toLowerCase();
+
+  // filter the projects list by title
+  const filteredProjects = projects.filter((p) =>
+    p.title.toLowerCase().includes(query)
+  );
+
+  // re-render the visible projects list
+  renderProjects(filteredProjects, projectsContainer, "h2");
+});
+

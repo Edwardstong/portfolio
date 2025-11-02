@@ -160,19 +160,34 @@ path {
   transition: opacity 300ms;
 }
 
-/* highlight only the selected slice (keep original color, just brighten/outline) */
+/* --- keep your hover from 5.1 --- */
+svg:has(path:hover) path { opacity: 0.5; }
+path:hover { opacity: 1; }
+path { transition: opacity 300ms; }
+
+/* --- 5.2 selection styling per write-up --- */
+/* Use the write-up’s color: oklch(60% 45% 0)  -> proper CSS syntax is 0.45 for chroma */
 path.selected {
-  filter: brightness(1.25);
-  stroke: currentColor;
-  stroke-width: 1.5;
+  --selected-color: oklch(60% 0.45 0);
+  fill: var(--selected-color) !important; /* only the clicked slice recolors */
 }
 
-/* highlight the matching legend item */
+/* When a slice is selected, dim all *other* slices */
+svg:has(path.selected) path:not(.selected) {
+  opacity: 0.35;
+}
+
+/* Legend selection + dimming to match */
 .legend-item.selected {
-  outline: 2px solid var(--color);
+  --selected-color: oklch(60% 0.45 0);
+  outline: 2px solid var(--selected-color);
   outline-offset: 2px;
   font-weight: 600;
 }
+.legend:has(.selected) .legend-item:not(.selected) {
+  opacity: 0.6;
+}
+
 
 
 

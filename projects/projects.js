@@ -24,7 +24,7 @@ const radius = 50;
 
 // color scale
 const color = d3.scaleOrdinal()
-  .domain(byYear.map(d => d.key))
+  .domain(data.map(d => d.label))
   .range(d3.schemeTableau10);
 
 // pie + arc
@@ -41,10 +41,10 @@ const g = svg.append('g').attr('transform', 'translate(0,0)');
 
 // draw slices
 g.selectAll('path')
-  .data(pie(byYear))
+  .data(pie(data))
   .join('path')
   .attr('d', arc)
-  .attr('fill', d => color(d.data.key))
+  .attr('fill', d => color(d.data.label))
   .attr('stroke', 'white')
   .attr('stroke-width', 1);
 
@@ -57,12 +57,17 @@ g.selectAll('path')
     d3.select(this).attr('opacity', 1);
   });
 
+
 const legend = d3.select('.legend');
 
-byYear.forEach(d => {
+data.forEach(d => {
   legend
     .append('li')
     .attr('class', 'legend-item')
-    .attr('style', `--color:${color(d.key)}`)
-    .html(`<span class="swatch"></span> ${d.key} <em>(${d.value})</em>`);
+    .attr('style', `--color:${color(d.label)}`)
+    .html(`<span class="swatch"></span> ${d.label} <em>(${d.value})</em>`);
 });
+
+
+const data = byYear.map(d => ({ label: d.key, value: d.value }));
+

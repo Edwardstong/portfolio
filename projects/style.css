@@ -147,3 +147,26 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
+/* Step 5.1 — Highlight hovered wedge */
+svg:has(path:hover) path {
+  opacity: 0.5;
+}
+
+path:hover {
+  opacity: 1;
+}
+
+path {
+  transition: opacity 300ms;
+}
+
+/* Step 5.2 — Highlighting selected wedge & legend */
+.selected {
+  --color: oklch(65% 0.45 90) !important; /* pick any contrasting color */
+}
+
+svg:has(path.selected) path {
+  fill: var(--color);
+}
+
+

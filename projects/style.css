@@ -122,3 +122,15 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color);
   border-radius: 3px;          /* 50% for a circle if you prefer */
 }
+
+/* Step 2.3: layout pie + legend side-by-side */
+.container {
+  display: flex;
+  align-items: flex-start;   /* top-align */
+  gap: 1rem;                 /* space between pie and legend */
+}
+
+/* let the legend use the remaining width */
+.container .legend {
+  flex: 1;
+}

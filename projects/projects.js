@@ -137,15 +137,16 @@ let query = "";
 const searchInput = document.querySelector(".searchBar");
 
 searchInput?.addEventListener("input", (event) => {
-  // update the query value
   query = event.target.value.toLowerCase();
 
-  // filter the projects list by title
-  const filteredProjects = projects.filter((p) =>
-    p.title.toLowerCase().includes(query)
-  );
+  // Filter across all project metadata
+  const filteredProjects = projects.filter((project) => {
+    const values = Object.values(project).join(" ").toLowerCase();
+    return values.includes(query);
+  });
 
-  // re-render the visible projects list
+  // Re-render filtered projects
   renderProjects(filteredProjects, projectsContainer, "h2");
+
 });
 

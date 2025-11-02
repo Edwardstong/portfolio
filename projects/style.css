@@ -134,3 +134,16 @@ h1, h2, h3, h4, h5, h6 {
 .container .legend {
   flex: 1;
 }
+
+.searchBar {
+  display: block;
+  width: 100%;
+  max-width: 20em;
+  margin: 0 auto 1rem auto; /* centers it like the screenshot */
+  padding: 0.4em 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 0.4em;
+  font-size: 1em;
+  text-align: center;
+}
+

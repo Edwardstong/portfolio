@@ -89,3 +89,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-block: 2em;
   overflow: visible;
 }
+
+.legend { list-style: none; margin: 0.5rem 0; padding: 0; }
+.legend li { display: flex; align-items: center; gap: 0.5rem; }
+.legend .swatch { width: 0.8rem; height: 0.8rem; background: var(--c); }

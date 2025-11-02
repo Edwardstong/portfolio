@@ -77,3 +77,10 @@ row.append('text')
   .attr('font-size', 11)
   .text(d => `${d.key}: ${d.value}`);
 
+// Legend (required)
+d3.select('.legend')
+  .selectAll('li')
+  .data(byYear)
+  .join('li')
+  .attr('style', d => `--c:${color(d.key)}`)
+  .html(d => `<span class="swatch"></span>${d.key} (${d.value})`);

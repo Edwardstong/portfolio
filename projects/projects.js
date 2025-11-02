@@ -62,6 +62,7 @@ const legend = d3.select('.legend');
 byYear.forEach(d => {
   legend
     .append('li')
+    .attr('class', 'legend-item')
     .attr('style', `--color:${color(d.key)}`)
     .html(`<span class="swatch"></span> ${d.key} <em>(${d.value})</em>`);
 });

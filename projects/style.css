@@ -93,3 +93,32 @@ h1, h2, h3, h4, h5, h6 {
 .legend { list-style: none; margin: 0.5rem 0; padding: 0; }
 .legend li { display: flex; align-items: center; gap: 0.5rem; }
 .legend .swatch { width: 0.8rem; height: 0.8rem; background: var(--c); }
+
+/* Legend container as a responsive grid */
+.legend {
+  list-style: none;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9em, 1fr)); /* per lab */
+  gap: 0.75rem 1rem;   /* row gap / column gap */
+  border: 1px solid #e5e5e5;       /* optional but matches write-up */
+  border-radius: 8px;               /* optional */
+}
+
+/* Each legend item: align swatch + text */
+.legend-item {
+  display: flex;               /* per lab tip */
+  align-items: center;         /* centers the swatch with text */
+  gap: 0.5rem;                 /* item gap should be < .legend gap */
+  min-width: 8em;              /* reasonable width so grid can wrap */
+}
+
+/* Swatch appearance */
+.legend .swatch {
+  display: inline-block;       /* needed for width/height to apply */
+  width: 0.9rem;
+  aspect-ratio: 1 / 1;         /* square */
+  background: var(--color);
+  border-radius: 3px;          /* 50% for a circle if you prefer */
+}

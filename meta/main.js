@@ -31,6 +31,7 @@ function processCommits(data) {
       totalLines: lines.length,
     };
 
+    // keep original lines (hidden) for later rollups
     Object.defineProperty(ret, "lines", {
       value: lines,
       enumerable: false,
@@ -75,7 +76,7 @@ function updateTooltipPosition(event) {
   tooltip.style.top = `${event.clientY}px`;
 }
 
-// Step 2.2 + 2.3 + 4 — Scatter, axes, gridlines, sized dots
+// Step 2.2 + 2.3 + 4 + 5 — Scatter, axes, gridlines, sized dots, brushing
 function renderScatterPlot(data, commits) {
   const width = 1000;
   const height = 600;
@@ -107,7 +108,7 @@ function renderScatterPlot(data, commits) {
     .domain([0, 24])
     .range([usableArea.bottom, usableArea.top]);
 
-  // Step 4.1 — radius scale from totalLines (use sqrt for area perception)
+  // Radius scale from totalLines (sqrt for area perception)
   const [minLines, maxLines] = d3.extent(commits, (d) => d.totalLines);
   const rScale = d3.scaleSqrt().domain([minLines ?? 0, maxLines ?? 1]).range([2, 30]);
 
@@ -118,11 +119,11 @@ function renderScatterPlot(data, commits) {
     .attr("transform", `translate(${usableArea.left}, 0)`);
   gridlines.call(d3.axisLeft(yScale).tickFormat("").tickSize(-usableArea.width));
 
-  // Step 4.3 — sort so large circles render first; small ones remain hoverable on top
+  // Sort so large circles render first; small ones stay on top for hover
   const sorted = d3.sort(commits, (d) => -d.totalLines);
 
-  // Dots (now sized + semi-transparent)
-  svg
+  // Dots
+  const dots = svg
     .append("g")
     .attr("class", "dots")
     .selectAll("circle")
@@ -134,21 +135,18 @@ function renderScatterPlot(data, commits) {
     .attr("fill", "steelblue")
     .attr("fill-opacity", 0.7)
     .on("mouseenter", (event, commit) => {
-      // highlight the hovered dot and show tooltip
       d3.select(event.currentTarget).style("fill-opacity", 1);
       renderTooltipContent(commit);
       updateTooltipVisibility(true);
       updateTooltipPosition(event);
     })
-    .on("mousemove", (event) => {
-      updateTooltipPosition(event);
-    })
+    .on("mousemove", (event) => updateTooltipPosition(event))
     .on("mouseleave", (event) => {
       d3.select(event.currentTarget).style("fill-opacity", 0.7);
       updateTooltipVisibility(false);
     });
 
-  // axes
+  // Axes
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3
     .axisLeft(yScale)
@@ -161,7 +159,78 @@ function renderScatterPlot(data, commits) {
   svg.append("g")
     .attr("transform", `translate(${usableArea.left}, 0)`)
     .call(yAxis);
+
+  // ─────────────── Step 5 — Brushing ───────────────
+
+  // 5.1 Setup the brush and 5.2 keep dots above overlay for hover
+  svg.call(
+    d3.brush()
+      .extent([[usableArea.left, usableArea.top], [usableArea.right, usableArea.bottom]])
+      .on("start brush end", brushed)
+  );
+  // Ensure overlay is before dots so hover works
+  svg.selectAll(".dots, .overlay ~ *").raise();
+
+  // Helper: whether a commit is inside current selection (in pixel space)
+  function isCommitSelected(selection, commit) {
+    if (!selection) return false;
+    const [[x0, y0], [x1, y1]] = selection;
+    const x = xScale(commit.datetime);
+    const y = yScale(commit.hourFrac);
+    return x0 <= x && x <= x1 && y0 <= y && y <= y1;
+  }
+
+  // 5.5 — Count label updater (returns the selected commits)
+  function renderSelectionCount(selection) {
+    const selected = selection ? commits.filter((d) => isCommitSelected(selection, d)) : [];
+    const el = document.querySelector("#selection-count");
+    if (el) el.textContent = `${selected.length || "No"} commits selected`;
+    return selected;
+  }
+
+  // 5.6 — Language breakdown (by line "type" field)
+  function renderLanguageBreakdown(selection) {
+    const selected = selection ? commits.filter((d) => isCommitSelected(selection, d)) : [];
+    const container = document.getElementById("language-breakdown");
+    if (!container) return;
+
+    if (selected.length === 0) {
+      container.innerHTML = ""; // nothing selected
+      return;
+    }
+
+    const lines = selected.flatMap((d) => d.lines);
+    const breakdown = d3.rollup(
+      lines,
+      (v) => v.length,
+      (d) => d.type // assumes your loc.csv has a 'type' column
+    );
+
+    const total = d3.sum(breakdown.values());
+    const fmt = d3.format(".1~%");
+
+    container.innerHTML = "";
+    for (const [language, count] of breakdown) {
+      const proportion = count / total;
+      container.innerHTML += `
+        <dt>${language || "Unknown"}</dt>
+        <dd>${count} lines (${fmt(proportion)})</dd>
+      `;
+    }
+  }
+
+  // 5.4 — Handle brushing selection
+  function brushed(event) {
+    const selection = event.selection;
+
+    // highlight selected dots
+    dots.classed("selected", (d) => isCommitSelected(selection, d));
+
+    // update count + language breakdown
+    renderSelectionCount(selection);
+    renderLanguageBreakdown(selection);
+  }
 }
 
-// call the chart
+// Call the chart
 renderScatterPlot(data, commits);

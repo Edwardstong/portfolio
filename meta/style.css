@@ -125,3 +125,6 @@ thead th {
   top: 0;
   background: color-mix(in oklch, canvas, var(--color-accent) 4%);
 }
+
+.gridlines line { stroke: oklch(60% 3% 200 / 35%); shape-rendering: crispEdges; }
+.gridlines path { display: none; }

@@ -1,47 +1,127 @@
-:root { --color-accent: oklch(85.41% 0.1219 193.853); }
+:root {
+  --color-accent: oklch(85.41% 0.1219 193.853);
+}
 
 html { color-scheme: light dark; }
-body { background: canvas; color: canvastext; accent-color: var(--color-accent); }
+body { background: canvas; color: canvastext; }
+
+html { accent-color: var(--color-accent); }
 
 body {
-  font: 100%/1.5 system-ui;
+  font: 100% / 1.5 system-ui;
   max-width: 100ch;
   margin-inline: auto;
   padding: 1rem;
 }
 
-/* Top nav */
+/* ---------- Nav (injected by global.js) ---------- */
 nav {
   display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-bottom: .25rem;
-  border-bottom: 1px solid oklch(50% 10% 200 / 40%);
-}
-nav a {
-  flex: 1;
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-  padding: .5rem 0;
-}
-nav a.current {
-  border-bottom: .35rem solid oklch(70% 6% 200 / 45%);
-  padding-bottom: .15rem;
-}
-nav a:hover,
-nav a:focus-visible {
-  border-bottom: .35rem solid var(--color-accent);
-  padding-bottom: .15rem;
-  background: color-mix(in oklch, var(--color-accent), canvas 85%);
+  margin-bottom: 1rem;
+  --border-color: oklch(50% 10% 200 / 40%);
+  border-bottom: 1px solid var(--border-color);
 }
 
-/* Page content */
-main { padding-top: .25rem; }
+nav a {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  padding: 0.5em;
+}
+
+nav a.current {
+  border-bottom: 0.4em solid var(--border-color);
+  padding-bottom: 0.1em;
+}
+
+nav a:hover,
+nav a:focus-visible {
+  border-bottom: 0.4em solid var(--color-accent);
+  padding-bottom: 0.1em;
+  background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
+}
+
+/* ---------- Theme switch (pin to top-right) ---------- */
+label.color-scheme {
+  position: fixed;      /* ensures top-right on every page */
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  font-size: 80%;
+  font-family: inherit;
+}
+label.color-scheme select { font-family: inherit; }
+
+/* ---------- Meta page typography & layout ---------- */
 h1 {
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 1.1;
-  margin: .25rem 0 .5rem;
+  margin: 0 0 .25rem;
+  text-wrap: balance;
 }
-p { margin: 0; opacity: .9; }
+
+h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  text-wrap: balance;
+  margin: 1rem 0 .5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  border-top: 2px solid oklch(80% 3% 200);
+  padding-top: .5rem;
+}
+
+h3 { font-size: 1.1rem; margin-top: .5rem; }
+
+header { margin-bottom: .75rem; }
+header p { margin: .25rem 0 0; opacity: .85; }
+
+main { display: grid; gap: 1rem; }
+
+section {
+  padding-bottom: .75rem;
+  border-bottom: 1px dashed oklch(80% 3% 200);
+}
+
+article { margin: .5rem 0 1rem; }
+
+ul { margin: .25rem 0 .5rem; padding-left: 1.1rem; }
+li { margin: .2rem 0; }
+
+time { font-variant-numeric: tabular-nums; opacity: .9; }
+
+a { text-underline-offset: .14em; }
+a:hover, a:focus-visible { text-decoration-thickness: .14em; }
+
+/* ---------- Helpful for Meta content ---------- */
+code, pre, kbd, samp {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.925em;
+}
+
+pre {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklch, canvas, var(--color-accent) 6%);
+  outline: 1px solid oklch(70% 3% 200 / 35%);
+  overflow-x: auto;
+}
+
+/* Optional: table styling if you render loc.csv later */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+th, td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid oklch(80% 3% 200 / 45%);
+  text-align: left;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: color-mix(in oklch, canvas, var(--color-accent) 4%);
+}

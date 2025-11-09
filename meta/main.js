@@ -56,31 +56,26 @@ const data = await loadData();
 const commits = processCommits(data);
 renderCommitInfo(data, commits);
 
-// ────────────────────────────────────────────────────────────────
-// Step 3 — Tooltip helpers
+// ── Step 3 — Tooltip helpers ───────────────────────────────────
 function renderTooltipContent(commit) {
   const link = document.getElementById("commit-link");
   const date = document.getElementById("commit-date");
   if (!commit) return;
-
   link.href = commit.url;
   link.textContent = commit.id;
   date.textContent = commit.datetime.toLocaleString("en", { dateStyle: "full" });
 }
-
 function updateTooltipVisibility(isVisible) {
   const tooltip = document.getElementById("commit-tooltip");
   tooltip.hidden = !isVisible;
 }
-
 function updateTooltipPosition(event) {
   const tooltip = document.getElementById("commit-tooltip");
   tooltip.style.left = `${event.clientX}px`;
   tooltip.style.top = `${event.clientY}px`;
 }
-// ────────────────────────────────────────────────────────────────
 
-// Step 2.2 + 2.3 — Scatter with axes and horizontal gridlines
+// Step 2.2 + 2.3 + 4 — Scatter, axes, gridlines, sized dots
 function renderScatterPlot(data, commits) {
   const width = 1000;
   const height = 600;
@@ -112,25 +107,35 @@ function renderScatterPlot(data, commits) {
     .domain([0, 24])
     .range([usableArea.bottom, usableArea.top]);
 
-  // Step 2.3: horizontal gridlines (add BEFORE axes)
+  // Step 4.1 — radius scale from totalLines (use sqrt for area perception)
+  const [minLines, maxLines] = d3.extent(commits, (d) => d.totalLines);
+  const rScale = d3.scaleSqrt().domain([minLines ?? 0, maxLines ?? 1]).range([2, 30]);
+
+  // Gridlines (before axes)
   const gridlines = svg
     .append("g")
     .attr("class", "gridlines")
     .attr("transform", `translate(${usableArea.left}, 0)`);
   gridlines.call(d3.axisLeft(yScale).tickFormat("").tickSize(-usableArea.width));
 
-  // dots + Step 3 events
+  // Step 4.3 — sort so large circles render first; small ones remain hoverable on top
+  const sorted = d3.sort(commits, (d) => -d.totalLines);
+
+  // Dots (now sized + semi-transparent)
   svg
     .append("g")
     .attr("class", "dots")
     .selectAll("circle")
-    .data(commits)
+    .data(sorted)
     .join("circle")
     .attr("cx", (d) => xScale(d.datetime))
     .attr("cy", (d) => yScale(d.hourFrac))
-    .attr("r", 5)
+    .attr("r", (d) => rScale(d.totalLines))
     .attr("fill", "steelblue")
+    .attr("fill-opacity", 0.7)
     .on("mouseenter", (event, commit) => {
+      // highlight the hovered dot and show tooltip
+      d3.select(event.currentTarget).style("fill-opacity", 1);
       renderTooltipContent(commit);
       updateTooltipVisibility(true);
       updateTooltipPosition(event);
@@ -138,7 +143,8 @@ function renderScatterPlot(data, commits) {
     .on("mousemove", (event) => {
       updateTooltipPosition(event);
     })
-    .on("mouseleave", () => {
+    .on("mouseleave", (event) => {
+      d3.select(event.currentTarget).style("fill-opacity", 0.7);
       updateTooltipVisibility(false);
     });
 

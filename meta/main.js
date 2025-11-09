@@ -56,6 +56,30 @@ const data = await loadData();
 const commits = processCommits(data);
 renderCommitInfo(data, commits);
 
+// ────────────────────────────────────────────────────────────────
+// Step 3 — Tooltip helpers
+function renderTooltipContent(commit) {
+  const link = document.getElementById("commit-link");
+  const date = document.getElementById("commit-date");
+  if (!commit) return;
+
+  link.href = commit.url;
+  link.textContent = commit.id;
+  date.textContent = commit.datetime.toLocaleString("en", { dateStyle: "full" });
+}
+
+function updateTooltipVisibility(isVisible) {
+  const tooltip = document.getElementById("commit-tooltip");
+  tooltip.hidden = !isVisible;
+}
+
+function updateTooltipPosition(event) {
+  const tooltip = document.getElementById("commit-tooltip");
+  tooltip.style.left = `${event.clientX}px`;
+  tooltip.style.top = `${event.clientY}px`;
+}
+// ────────────────────────────────────────────────────────────────
+
 // Step 2.2 + 2.3 — Scatter with axes and horizontal gridlines
 function renderScatterPlot(data, commits) {
   const width = 1000;
@@ -88,17 +112,14 @@ function renderScatterPlot(data, commits) {
     .domain([0, 24])
     .range([usableArea.bottom, usableArea.top]);
 
-  // --- Step 2.3: horizontal gridlines (add BEFORE axes)
+  // Step 2.3: horizontal gridlines (add BEFORE axes)
   const gridlines = svg
     .append("g")
     .attr("class", "gridlines")
     .attr("transform", `translate(${usableArea.left}, 0)`);
+  gridlines.call(d3.axisLeft(yScale).tickFormat("").tickSize(-usableArea.width));
 
-  gridlines.call(
-    d3.axisLeft(yScale).tickFormat("").tickSize(-usableArea.width)
-  );
-
-  // dots
+  // dots + Step 3 events
   svg
     .append("g")
     .attr("class", "dots")
@@ -108,7 +129,18 @@ function renderScatterPlot(data, commits) {
     .attr("cx", (d) => xScale(d.datetime))
     .attr("cy", (d) => yScale(d.hourFrac))
     .attr("r", 5)
-    .attr("fill", "steelblue");
+    .attr("fill", "steelblue")
+    .on("mouseenter", (event, commit) => {
+      renderTooltipContent(commit);
+      updateTooltipVisibility(true);
+      updateTooltipPosition(event);
+    })
+    .on("mousemove", (event) => {
+      updateTooltipPosition(event);
+    })
+    .on("mouseleave", () => {
+      updateTooltipVisibility(false);
+    });
 
   // axes
   const xAxis = d3.axisBottom(xScale);

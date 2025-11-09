@@ -128,3 +128,43 @@ thead th {
 
 .gridlines line { stroke: oklch(60% 3% 200 / 35%); shape-rendering: crispEdges; }
 .gridlines path { display: none; }
+
+/* Step 3 — tooltip base layout (dl.info) */
+dl.info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0.5rem 0 0;
+}
+dl.info dt { opacity: 0.8; }
+dl.info dd { margin: 0; }
+
+/* Make it look like a tooltip and keep it visible on scroll */
+.tooltip {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklch, canvas, white 10%);
+  box-shadow: 0 6px 18px oklch(20% 0 0 / 25%);
+  backdrop-filter: saturate(120%) blur(4px);
+  border: 1px solid oklch(70% 3% 200 / 35%);
+  transition-duration: 500ms;
+  transition-property: opacity, visibility, transform, left, top;
+}
+
+/* Smooth hide/show using [hidden] */
+dl.info[hidden]:not(:hover, :focus-within) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Dot hover animation */
+circle {
+  transition: 200ms;
+  transform-origin: center;
+  transform-box: fill-box; /* keeps scale centered on the circle */
+}
+circle:hover { transform: scale(1.5); }
+

@@ -245,7 +245,7 @@ function updateScatterPlot(data, commits) {
     });
 }
 
-// Step 2 — files unit visualization
+// Step 2 — files unit visualization (filename + "N lines" text + dots)
 function updateFileDisplay(filteredCommits) {
   const lines = filteredCommits.flatMap((d) => d.lines);
 
@@ -265,19 +265,31 @@ function updateFileDisplay(filteredCommits) {
       })
     );
 
-  // dt: filename + “N lines” label
+  // dt: filename only
   filesContainer
     .select("dt")
-    .html((d) => `<code>${d.name}</code><small>${d.lines.length} lines</small>`);
+    .html((d) => `<code>${d.name}</code>`);
 
-  // dd: unit visualization dots, one per edited line, colored by type
+  // dd: first a "N lines" label, then the dots
   filesContainer
     .select("dd")
-    .selectAll("div")
-    .data((d) => d.lines)
-    .join("div")
-    .attr("class", "loc")
-    .attr("style", (d) => `--color: ${colors(d.type)}`); // Step 2.4: color by technology
+    .each(function (d) {
+      const dd = d3.select(this);
+
+      // text label
+      dd.selectAll("span.line-count")
+        .data([d])
+        .join("span")
+        .attr("class", "line-count")
+        .text(`${d.lines.length} lines`);
+
+      // dots
+      dd.selectAll("div.loc")
+        .data(d.lines)
+        .join("div")
+        .attr("class", "loc")
+        .attr("style", (line) => `--color: ${colors(line.type)}`);
+    });
 }
 
 // ── Main async flow ────────────────────────────────────────────
@@ -333,7 +345,7 @@ renderScatterPlot(data, commits);
 updateFileDisplay(filteredCommits);
 onTimeSliderChange();
 
-// Step 3.2 — generate commit text
+// Step 3.2 — generate commit text (scrollytelling)
 d3
   .select("#scatter-story")
   .selectAll(".step")

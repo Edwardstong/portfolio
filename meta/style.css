@@ -175,20 +175,20 @@ circle:hover { transform: scale(1.5); }
 #files {
   display: grid;
   grid-template-columns: 1fr 4fr;
+}
 
-  > div {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: subgrid;
-  }
+#files > div {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
 
-  dt {
-    grid-column: 1;
-  }
+#files dt {
+  grid-column: 1;
+}
 
-  dd {
-    grid-column: 2;
-  }
+#files dd {
+  grid-column: 2;
 }
 
 /* Step 2.2 / 2.4 — unit visualization dots */
@@ -212,15 +212,23 @@ dd {
   margin-left: 0;
 }
 
+/* Text label "N lines" above dots, separated */
+#files dd .line-count {
+  flex-basis: 100%;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
 /* Step 3.1 — scrollytelling layout */
 #scrolly-1 {
   position: relative;
   display: flex;
   gap: 1rem;
+}
 
-  > * {
-    flex: 1;
-  }
+#scrolly-1 > * {
+  flex: 1;
 }
 
 #scatter-story {
@@ -233,13 +241,6 @@ dd {
   left: 0;
   bottom: auto;
   height: 50vh;
-}
-
-/* Show the "N lines" label under the filename */
-#files dt small {
-  display: block;
-  font-size: 0.8rem;
-  opacity: 0.7;
 }
 
 /* Stats row styling (COMMITS / FILES / TOTAL LOC / MAX DEPTH / LONGEST LINE / MAX LINES) */
@@ -261,4 +262,3 @@ dl.stats dd {
   font-size: 1.4rem;
   font-variant-numeric: tabular-nums;
 }
-

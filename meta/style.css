@@ -234,3 +234,31 @@ dd {
   bottom: auto;
   height: 50vh;
 }
+
+/* Show the "N lines" label under the filename */
+#files dt small {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* Stats row styling (COMMITS / FILES / TOTAL LOC / MAX DEPTH / LONGEST LINE / MAX LINES) */
+dl.stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+dl.stats dt {
+  margin: 0;
+  letter-spacing: 0.08em;
+}
+
+dl.stats dd {
+  margin: 0;
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+

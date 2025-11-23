@@ -9,6 +9,42 @@ let xScale;
 let yScale;
 let colors = d3.scaleOrdinal(d3.schemeTableau10);
 
+// ---- Summary stats helpers (for the row under files) ----
+function computeStats(commitsSubset) {
+  const lines = commitsSubset.flatMap((d) => d.lines);
+
+  return {
+    commits: commitsSubset.length,
+    files: new Set(lines.map((d) => d.file)).size,
+    totalLOC: lines.length,
+    maxDepth: lines.length ? d3.max(lines, (d) => d.depth) : 0,
+    longestLine: lines.length ? d3.max(lines, (d) => d.length) : 0,
+    maxLines: commitsSubset.length ? d3.max(commitsSubset, (d) => d.totalLines) : 0,
+  };
+}
+
+function renderStats(stats) {
+  const dl = d3.select("#stats").html("").append("dl").attr("class", "stats");
+
+  dl.append("dt").text("COMMITS");
+  dl.append("dd").text(stats.commits);
+
+  dl.append("dt").text("FILES");
+  dl.append("dd").text(stats.files);
+
+  dl.append("dt").html('TOTAL <abbr title="Lines of code">LOC</abbr>');
+  dl.append("dd").text(stats.totalLOC);
+
+  dl.append("dt").text("MAX DEPTH");
+  dl.append("dd").text(stats.maxDepth);
+
+  dl.append("dt").text("LONGEST LINE");
+  dl.append("dd").text(stats.longestLine);
+
+  dl.append("dt").text("MAX LINES");
+  dl.append("dd").text(stats.maxLines);
+}
+
 // Step 1.1 — Read loc.csv with row conversion
 async function loadData() {
   const data = await d3.csv("./loc.csv", (row) => ({
@@ -51,15 +87,6 @@ function processCommits(data) {
   });
 
   return d3.sort(commits, (d) => d.datetime);
-}
-
-// Step 1.3 — Display Total LOC and Total commits
-function renderCommitInfo(data, commits) {
-  const dl = d3.select("#stats").append("dl").attr("class", "stats");
-  dl.append("dt").html('Total <abbr title="Lines of code">LOC</abbr>');
-  dl.append("dd").text(data.length);
-  dl.append("dt").text("Total commits");
-  dl.append("dd").text(commits.length);
 }
 
 // ── Tooltip helpers (unchanged from Lab 6) ─────────────────────
@@ -233,13 +260,17 @@ function updateFileDisplay(filteredCommits) {
     .data(files, (d) => d.name)
     .join((enter) =>
       enter.append("div").call((div) => {
-        div.append("dt").append("code");
+        div.append("dt");
         div.append("dd");
       })
     );
 
-  filesContainer.select("dt > code").text((d) => d.name);
+  // dt: filename + “N lines” label
+  filesContainer
+    .select("dt")
+    .html((d) => `<code>${d.name}</code><small>${d.lines.length} lines</small>`);
 
+  // dd: unit visualization dots, one per edited line, colored by type
   filesContainer
     .select("dd")
     .selectAll("div")
@@ -252,7 +283,6 @@ function updateFileDisplay(filteredCommits) {
 // ── Main async flow ────────────────────────────────────────────
 const data = await loadData();
 const commits = processCommits(data);
-renderCommitInfo(data, commits);
 
 // Step 1.1 – slider + timeScale + filteredCommits
 let commitProgress = 100;
@@ -266,6 +296,9 @@ let timeScale = d3
 
 let commitMaxTime = timeScale.invert(commitProgress);
 let filteredCommits = commits;
+
+// initial stats (for all commits) and elements
+renderStats(computeStats(filteredCommits));
 
 const sliderEl = document.getElementById("commit-progress");
 const timeEl = document.getElementById("commit-time");
@@ -284,18 +317,20 @@ function onTimeSliderChange() {
   }
 
   filteredCommits = commits.filter((d) => d.datetime <= commitMaxTime);
+
+  renderStats(computeStats(filteredCommits));
   updateScatterPlot(data, filteredCommits);
   updateFileDisplay(filteredCommits);
 }
 
 if (sliderEl) {
+  sliderEl.value = String(commitProgress);
   sliderEl.addEventListener("input", onTimeSliderChange);
 }
 
 // initial render
 renderScatterPlot(data, commits);
 updateFileDisplay(filteredCommits);
-if (sliderEl) sliderEl.value = String(commitProgress);
 onTimeSliderChange();
 
 // Step 3.2 — generate commit text
@@ -338,6 +373,7 @@ function onStepEnter(response) {
   }
 
   filteredCommits = commits.filter((d) => d.datetime <= commitMaxTime);
+  renderStats(computeStats(filteredCommits));
   updateScatterPlot(data, filteredCommits);
   updateFileDisplay(filteredCommits);
 }
